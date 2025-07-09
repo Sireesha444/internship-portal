@@ -8,15 +8,22 @@ import {
   Container,
   CssBaseline,
   Paper,
-  Grid
+  Grid,
+  Avatar,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
-export default function HomePage() {
+export default function HomePage({ user }) {
   const navigate = useNavigate();
 
-  // Simulate user type — replace this with real logic later
-  const isAdmin = false; // Change this to true if the user is admin
+  const admin = JSON.parse(localStorage.getItem("admin")); // Check if admin is logged in
+  const isAdmin = !!admin;
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');  // logout student
+    localStorage.removeItem('admin'); // logout admin (just in case)
+    navigate('/');
+  };
 
   const features = [
     {
@@ -27,40 +34,52 @@ export default function HomePage() {
     },
     {
       title: "🏢 Company Access",
-      description: "Post internships and view applicants.",
-      button: "Company Login",
-      onClick: () => navigate('/company-login'),
+      description: "Search and view skilled student profiles.",
+      button: "Access Students",
+      onClick: () => navigate('/company-access'),
     },
   ];
-
-  // Admin-only feature
-  if (isAdmin) {
-    features.push({
-      title: "🧑‍💼 Admin Dashboard",
-      description: "Track all users and data reports.",
-      button: "Admin Access",
-      onClick: () => navigate('/admin'),
-    });
-  }
 
   return (
     <>
       <CssBaseline />
 
-      {/* Navigation */}
+      {/* AppBar */}
       <AppBar position="static" sx={{ backgroundColor: '#003366' }}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Centralized Internship Portal
           </Typography>
-          <Button color="inherit" onClick={() => navigate('/')}>Home</Button>
-          <Button color="inherit" onClick={() => navigate('/register')}>Students</Button>
-          <Button color="inherit" onClick={() => navigate('/company-login')}>Companies</Button>
-          <Button color="inherit" onClick={() => navigate('/admin')}>Admin</Button>
+
+          {/* Admin Info */}
+          {isAdmin && (
+            <>
+              <Typography variant="body1" sx={{ mr: 2 }}>Admin</Typography>
+              <Button color="inherit" onClick={() => navigate('/admin')}>Dashboard</Button>
+              <Button color="inherit" onClick={handleLogout}>Logout</Button>
+            </>
+          )}
+
+          {/* Student Info */}
+          {user && !isAdmin && (
+            <>
+              <Avatar src={user.picture} alt={user.name} sx={{ width: 32, height: 32, mr: 1 }} />
+              <Typography variant="body1" sx={{ mr: 2 }}>{user.name}</Typography>
+              <Button color="inherit" onClick={handleLogout}>Logout</Button>
+            </>
+          )}
+
+          {/* Not logged in */}
+          {!user && !isAdmin && (
+            <>
+              <Button color="inherit" onClick={() => navigate('/admin-login')}>Admin Login</Button>
+              <Button color="inherit" onClick={() => navigate('/')}>Login</Button>
+            </>
+          )}
         </Toolbar>
       </AppBar>
 
-      {/* Hero */}
+      {/* Hero Section */}
       <Box
         sx={{
           background: 'linear-gradient(to right, #0052D4, #6FB1FC)',
@@ -82,9 +101,9 @@ export default function HomePage() {
         <Typography variant="h4" align="center" gutterBottom>
           Portal Features
         </Typography>
-        <Grid container columns={12} spacing={4} justifyContent="center">
+        <Grid columns={12} gap={4} justifyContent="center">
           {features.map((item, index) => (
-            <Grid key={index} span={4}>
+            <Grid key={index} span={{ xs: 12, sm: 6, md: 4 }}>
               <Paper elevation={4} sx={{ p: 4, textAlign: 'center' }}>
                 <Typography variant="h6">{item.title}</Typography>
                 <Typography variant="body2" sx={{ mt: 1 }}>
